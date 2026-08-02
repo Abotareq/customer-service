@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="CustomerService.Application/CustomerService.Application.csproj" />
+  <Project Path="CustomerService.Contracts/CustomerService.Contracts.csproj" />
+  <Project Path="CustomerService.Infrastructure/CustomerService.Infrastructure.csproj" />
+  <Project Path="CustomerServiceApi/CustomerService.Api.csproj" />
+  <Project Path="CustomerServiceDomain/CustomerService.Domain.csproj" />
+</Solution>
