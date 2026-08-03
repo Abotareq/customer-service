@@ -16,13 +16,13 @@ namespace CustomerService.Domain.Users.Entites
 
         private Customer() { }
 
-        public static ErrorOr<Customer> Create(string fullName, string email)
+        public static ErrorOr<Customer> Create(UserId userId, string fullName, string email)
         {
             var errors = ValidateBasicInfo(fullName, email);
             if (errors.Count > 0)
                 return errors;
 
-            return new Customer(UserId.CreateUnique(), fullName, email);
+            return new Customer(userId, fullName, email);
         }
     }
 }

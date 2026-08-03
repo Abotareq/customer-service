@@ -1,4 +1,5 @@
 ﻿using CustomerService.Domain.Users.ValueObjects;
+using ErrorOr;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,9 +15,13 @@ namespace CustomerService.Domain.Users.Entites
 
         private Agent() { }
 
-        public static Agent Create(string fullName, string email)
+        public static ErrorOr<Agent> Create(UserId userId, string fullName, string email)
         {
-            return new Agent(UserId.CreateUnique(), fullName, email);
+            var errors = ValidateBasicInfo(fullName, email);
+            if (errors.Count > 0)
+                return errors;
+
+            return new Agent(userId, fullName, email);
         }
     }
 }
