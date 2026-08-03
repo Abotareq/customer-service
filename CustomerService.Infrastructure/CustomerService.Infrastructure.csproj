@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CustomerService.Application\CustomerService.Application.csproj" />
+    <ProjectReference Include="..\CustomerServiceDomain\CustomerService.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authintication\" />
+  </ItemGroup>
+
 </Project>
