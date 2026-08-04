@@ -53,5 +53,46 @@ namespace CustomerService.Infrastructure.Authintication
             RandomNumberGenerator.Fill(randomBytes);
             return Convert.ToBase64String(randomBytes);
         }
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string accessToken)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = _jwtSettings.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtSettings.Audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler
+            {
+                MapInboundClaims = false   // <-- stops "sub" from being renamed
+            };
+
+            ClaimsPrincipal principal;
+            SecurityToken securityToken;
+
+            try
+            {
+                principal = tokenHandler.ValidateToken(
+                    accessToken, tokenValidationParameters, out securityToken);
+            }
+            catch
+            {
+                return null;
+            }
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(
+                    SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+
+            return principal;
+        }
     }
 }

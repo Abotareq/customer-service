@@ -1,6 +1,7 @@
 ﻿using CustomerService.Domain.Users;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 
 namespace CustomerService.Application.Common.Interfaces.Authentication
@@ -9,5 +10,6 @@ namespace CustomerService.Application.Common.Interfaces.Authentication
     {
         string GenerateAccessToken(User user, string role);
         string GenerateRefreshToken();
+        ClaimsPrincipal? GetPrincipalFromExpiredToken(string accessToken);
     }
 }

@@ -7,7 +7,6 @@ namespace CustomerService.Infrastructure.Identity
 {
     public sealed class ApplicationUser : IdentityUser<Guid>
     {
-        public string FullName { get; set; } = null!;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
     }

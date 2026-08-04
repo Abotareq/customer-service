@@ -63,5 +63,29 @@ namespace CustomerService.Infrastructure.Authintication
 
             return (identityUser.Id, role);
         }
+        public async Task SaveRefreshTokenAsync(Guid userId, string refreshToken, DateTime expiryTime)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (identityUser is null) return;
+
+            identityUser.RefreshToken = refreshToken;
+            identityUser.RefreshTokenExpiryTime = expiryTime;
+            await _userManager.UpdateAsync(identityUser);
+        }
+
+        public async Task<ErrorOr<string>> ValidateStoredRefreshTokenAsync(Guid userId, string refreshToken)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (identityUser is null ||
+                identityUser.RefreshToken != refreshToken ||
+                identityUser.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return Error.Unauthorized("Auth.InvalidRefreshToken", "Refresh token is invalid or expired.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(identityUser);
+            return roles.FirstOrDefault() ?? "Customer";
+        }
     }
 }
