@@ -3,15 +3,16 @@ using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Infrastructure.Authintication;
 using CustomerService.Infrastructure.Identity;
 using CustomerService.Infrastructure.Persistence;
+using CustomerService.Infrastructure.Persistence.Interceptors;
 using CustomerService.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Identity.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Extensions.Identity.Core;
 namespace CustomerService.Infrastructure
 {
     public static class DependencyInjection
@@ -19,10 +20,15 @@ namespace CustomerService.Infrastructure
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services, IConfiguration configuration)
         {
+            //event dispatcher
+            services.AddScoped<DomainEventsDispatchInterceptor>();
             // Database
-            services.AddDbContext<CustomerSupportDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
+            services.AddDbContext<CustomerSupportDbContext>((sp, options) =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                options.AddInterceptors(sp.GetRequiredService<DomainEventsDispatchInterceptor>());
+            });
+            // Unit of Work
             services.AddScoped<IUnitOfWork>(sp =>
                 sp.GetRequiredService<CustomerSupportDbContext>());
 
@@ -41,6 +47,7 @@ namespace CustomerService.Infrastructure
 
             // Repositories
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRequestRepository, RequestRepository>();
 
             // Authentication services
             services.AddScoped<IAuthService, AuthService>();

@@ -33,12 +33,12 @@ namespace CustomerService.Api.Controllers
                 ErrorType.Validation => StatusCodes.Status400BadRequest,
                 ErrorType.NotFound => StatusCodes.Status404NotFound,
                 ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+                ErrorType.Forbidden => StatusCodes.Status403Forbidden,
                 _ => StatusCodes.Status500InternalServerError
             };
 
             return Problem(statusCode: statusCode, title: error.Description);
         }
-
         private IActionResult ValidationProblem(List<Error> errors)
         {
             var modelStateDictionary = new ModelStateDictionary();

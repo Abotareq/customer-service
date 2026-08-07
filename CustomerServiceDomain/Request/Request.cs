@@ -81,9 +81,6 @@ namespace CustomerService.Domain.Request
             Status = RequestStatus.Assigned;
             UpdatedAt = DateTime.UtcNow;
 
-            _logs.Add(Log.Create(LogField.Assignment, "Unassigned", agentId.Value.ToString(), agentId));
-            _logs.Add(Log.Create(LogField.Status, previousStatus.ToString(), Status.ToString(), agentId));
-
             RaiseDomainEvent(new RequestTaken(RequestId, agentId, previousStatus, Status));
 
             return Result.Success;
@@ -97,12 +94,6 @@ namespace CustomerService.Domain.Request
             var previousAgentId = AgentId;
             AgentId = agentId;
             UpdatedAt = DateTime.UtcNow;
-
-            _logs.Add(Log.Create(
-                LogField.Assignment,
-                previousAgentId?.Value.ToString() ?? "Unassigned",
-                agentId.Value.ToString(),
-                assignedBy));
 
             RaiseDomainEvent(new RequestAssigned(RequestId, previousAgentId, agentId, assignedBy));
 
@@ -118,8 +109,6 @@ namespace CustomerService.Domain.Request
             Status = newStatus;
             UpdatedAt = DateTime.UtcNow;
 
-            _logs.Add(Log.Create(LogField.Status, previousStatus.ToString(), newStatus.ToString(), changedBy));
-
             RaiseDomainEvent(new RequestStatusChanged(RequestId, previousStatus, newStatus, changedBy));
 
             return Result.Success;
@@ -130,8 +119,6 @@ namespace CustomerService.Domain.Request
             var previousUrgency = Urgency;
             Urgency = newUrgency;
             UpdatedAt = DateTime.UtcNow;
-
-            _logs.Add(Log.Create(LogField.Urgency, previousUrgency.ToString(), newUrgency.ToString(), changedBy));
 
             RaiseDomainEvent(new RequestUrgencyChanged(RequestId, previousUrgency, newUrgency, changedBy));
 
@@ -144,12 +131,25 @@ namespace CustomerService.Domain.Request
             Category = newCategory;
             UpdatedAt = DateTime.UtcNow;
 
-            _logs.Add(Log.Create(LogField.Category, previousCategory.ToString(), newCategory.ToString(), changedBy));
-
             RaiseDomainEvent(new RequestCategoryChanged(RequestId, previousCategory, newCategory, changedBy));
 
             return Result.Success;
         }
+
+        public ErrorOr<Success> RequestAdditionalInfo(UserId requestedBy)
+        {
+            if (!RequestStatusTransitionRules.CanTransition(Status, RequestStatus.WaitingOnCustomer))
+                return Errors.Request.InvalidStatusTransition;
+
+            Status = RequestStatus.WaitingOnCustomer;
+            UpdatedAt = DateTime.UtcNow;
+
+            RaiseDomainEvent(new AdditionalInfoRequested(RequestId, requestedBy));
+
+            return Result.Success;
+        }
+
+        public void AppendLog(Log log) => _logs.Add(log);
 
         public bool CanReceiveMessages() => Status != RequestStatus.Completed;
 
@@ -157,18 +157,10 @@ namespace CustomerService.Domain.Request
         public void ForceUnassignDueToAgentDeletion()
         {
             var previousStatus = Status;
-            var previousAgentId = AgentId;
 
             AgentId = null;
             Status = RequestStatus.Submitted;
             UpdatedAt = DateTime.UtcNow;
-
-            _logs.Add(Log.Create(
-                LogField.Assignment, previousAgentId?.Value.ToString() ?? "Unassigned", "Unassigned", null,
-                "Agent account deleted"));
-            _logs.Add(Log.Create(
-                LogField.Status, previousStatus.ToString(), Status.ToString(), null,
-                "Agent account deleted"));
 
             RaiseDomainEvent(new RequestStatusChanged(RequestId, previousStatus, Status, null));
         }
@@ -179,31 +171,12 @@ namespace CustomerService.Domain.Request
             Status = RequestStatus.Completed;
             UpdatedAt = DateTime.UtcNow;
 
-            _logs.Add(Log.Create(
-                LogField.Status, previousStatus.ToString(), Status.ToString(), null,
-                "Customer account deleted"));
-
             RaiseDomainEvent(new RequestStatusChanged(RequestId, previousStatus, Status, null));
         }
 
         private static string GenerateReferenceNumber()
         {
             return $"REQ-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}";
-        }
-        public ErrorOr<Success> RequestAdditionalInfo(UserId requestedBy)
-        {
-            if (!RequestStatusTransitionRules.CanTransition(Status, RequestStatus.WaitingOnCustomer))
-                return Errors.Request.InvalidStatusTransition;
-
-            var previousStatus = Status;
-            Status = RequestStatus.WaitingOnCustomer;
-            UpdatedAt = DateTime.UtcNow;
-
-            _logs.Add(Log.Create(LogField.Status, previousStatus.ToString(), Status.ToString(), requestedBy));
-
-            RaiseDomainEvent(new AdditionalInfoRequested(RequestId, requestedBy));
-
-            return Result.Success;
         }
     }
 }

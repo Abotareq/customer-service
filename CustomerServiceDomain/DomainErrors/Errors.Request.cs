@@ -28,6 +28,9 @@ namespace CustomerService.Domain.DomainErrors
             public static Error CannotAssignCompletedRequest => Error.Validation(
     code: "Request.CannotAssignCompletedRequest",
     description: "Cannot assign a completed request.");
+            public static Error NotAuthorizedToViewRequest => Error.Forbidden(
+    code: "Request.NotAuthorizedToViewRequest",
+    description: "You are not authorized to view this request.");
         }
     }
 }
