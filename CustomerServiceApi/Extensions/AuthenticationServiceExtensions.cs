@@ -22,6 +22,7 @@ namespace CustomerService.Api.Extensions
                 })
                 .AddJwtBearer(options =>
                 {
+                    options.MapInboundClaims = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,

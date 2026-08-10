@@ -54,6 +54,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     await RoleSeeder.SeedRolesAsync(scope.ServiceProvider);
+
+    if (app.Environment.IsDevelopment())
+    {
+        await TestUserSeeder.SeedAsync(scope.ServiceProvider);
+    }
 }
 
 // ---- Middleware pipeline ----
