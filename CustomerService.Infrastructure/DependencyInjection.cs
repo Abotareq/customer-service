@@ -22,7 +22,7 @@ namespace CustomerService.Infrastructure
         {
             //event dispatcher
             services.AddScoped<DomainEventsDispatchInterceptor>();
-            // Database
+
             services.AddDbContext<CustomerSupportDbContext>((sp, options) =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));

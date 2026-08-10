@@ -1,4 +1,5 @@
 ﻿using CustomerService.Domain.Request;
+using CustomerService.Domain.Request.Entites;
 using CustomerService.Domain.Request.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace CustomerService.Application.Common.Interfaces.Persistence
     {
         Task<Request?> GetByIdAsync(RequestId requestId);
         Task AddAsync(Request request);
-
+        void AddLog(RequestId requestId, Log log);
         Task<(List<Request> Items, int TotalCount)> GetFilteredAsync(
             Guid? customerId,
             Guid? agentId,

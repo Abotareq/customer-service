@@ -1,10 +1,11 @@
 ﻿using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Domain.Request;
+using CustomerService.Domain.Request.Entites;
 using CustomerService.Domain.Request.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace CustomerService.Infrastructure.Persistence.Repositories
 {
@@ -19,9 +20,15 @@ namespace CustomerService.Infrastructure.Persistence.Repositories
 
         public async Task<Request?> GetByIdAsync(RequestId requestId)
         {
-            return await _dbContext.Requests.FindAsync(requestId.Value);
+            return await _dbContext.Requests
+                .Include(r => r.Logs)
+                .FirstOrDefaultAsync(r => r.Id == requestId.Value);
         }
-
+        public void AddLog(RequestId requestId, Log log)
+        {
+            _dbContext.Set<Log>().Add(log);
+            _dbContext.Entry(log).Property("RequestId").CurrentValue = requestId.Value;
+        }
         public async Task AddAsync(Request request)
         {
             await _dbContext.Requests.AddAsync(request);
