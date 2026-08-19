@@ -4,6 +4,7 @@ using CustomerService.Application;
 using CustomerService.Infrastructure;
 using CustomerService.Infrastructure.Authintication;
 using CustomerService.Infrastructure.Identity;
+using CustomerService.Infrastructure.Notifications;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -17,6 +18,17 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddApiLayer();
     builder.Services.AddControllers();
     builder.Services.AddJwtAuthentication(builder.Configuration);
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("TestPolicy", policy =>
+        {
+            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:5500", "null")
+      .AllowAnyMethod()
+      .AllowAnyHeader()
+      .AllowCredentials();
+           
+        });
+    });
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new OpenApiInfo
@@ -66,6 +78,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors("TestPolicy");
 }
 
 app.UseHttpsRedirection();
@@ -74,5 +87,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<RequestHub>("/hubs/requests");
 app.Run();

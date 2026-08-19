@@ -8,9 +8,9 @@ using System.Text;
 namespace CustomerService.Application.Common.Behaviors
 {
     public sealed class ValidationBehavior<TRequest, TResponse>
-    : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : IRequest<TResponse>
-    where TResponse : IErrorOr
+   : IPipelineBehavior<TRequest, TResponse>
+   where TRequest : IRequest<TResponse>
+   where TResponse : IErrorOr
     {
         private readonly IValidator<TRequest>? _validator;
 

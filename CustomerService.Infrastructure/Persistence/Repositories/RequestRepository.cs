@@ -1,7 +1,9 @@
 ﻿using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Domain.Request;
 using CustomerService.Domain.Request.Entites;
+using CustomerService.Domain.Request.Enums;
 using CustomerService.Domain.Request.ValueObjects;
+using CustomerService.Domain.Users.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -35,34 +37,34 @@ namespace CustomerService.Infrastructure.Persistence.Repositories
         }
 
         public async Task<(List<Request> Items, int TotalCount)> GetFilteredAsync(
-            Guid? customerId,
-            Guid? agentId,
-            bool? unassignedOnly,
-            string? status,
-            string? urgency,
-            string? category,
-            int pageNumber,
-            int pageSize)
+      Guid? customerId,
+      Guid? agentId,
+      bool? unassignedOnly,
+      string? status,
+      string? urgency,
+      string? category,
+      int pageNumber,
+      int pageSize)
         {
             var query = _dbContext.Requests.AsQueryable();
 
             if (customerId.HasValue)
-                query = query.Where(r => r.CustomerId.Value == customerId.Value);
+                query = query.Where(r => r.CustomerId == UserId.Create(customerId.Value));
 
             if (agentId.HasValue)
-                query = query.Where(r => r.AgentId != null && r.AgentId.Value == agentId.Value);
+                query = query.Where(r => r.AgentId == UserId.Create(agentId.Value));
 
             if (unassignedOnly == true)
                 query = query.Where(r => r.AgentId == null);
 
             if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(r => r.Status.ToString() == status);
+                query = query.Where(r => r.Status == Enum.Parse<RequestStatus>(status));
 
             if (!string.IsNullOrWhiteSpace(urgency))
-                query = query.Where(r => r.Urgency.ToString() == urgency);
+                query = query.Where(r => r.Urgency == Enum.Parse<Urgency>(urgency));
 
             if (!string.IsNullOrWhiteSpace(category))
-                query = query.Where(r => r.Category.ToString() == category);
+                query = query.Where(r => r.Category == Enum.Parse<RequestCategory>(category));
 
             var totalCount = await query.CountAsync();
 

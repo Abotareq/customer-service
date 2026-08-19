@@ -1,4 +1,5 @@
 ﻿using CustomerService.Application.Common.Interfaces.Persistence;
+using CustomerService.Domain.Message;
 using CustomerService.Domain.Request;
 using CustomerService.Domain.Users;
 using CustomerService.Domain.Users.Entites;
@@ -25,6 +26,7 @@ namespace CustomerService.Infrastructure.Persistence
         public DbSet<Agent> Agents => Set<Agent>();
         public DbSet<Manager> Managers => Set<Manager>();
         public DbSet<Request> Requests => Set<Request>();
+        public DbSet<Message> Messages => Set<Message>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

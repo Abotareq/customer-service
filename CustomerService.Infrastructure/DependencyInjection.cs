@@ -1,7 +1,9 @@
 ﻿using CustomerService.Application.Common.Interfaces.Authentication;
+using CustomerService.Application.Common.Interfaces.Message;
 using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Infrastructure.Authintication;
 using CustomerService.Infrastructure.Identity;
+using CustomerService.Infrastructure.Notifications;
 using CustomerService.Infrastructure.Persistence;
 using CustomerService.Infrastructure.Persistence.Interceptors;
 using CustomerService.Infrastructure.Persistence.Repositories;
@@ -48,11 +50,15 @@ namespace CustomerService.Infrastructure
             // Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
             // Authentication services
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+            //messeges
+            services.AddSignalR();
+            services.AddScoped<IMessageNotifier, MessageNotifier>();
             return services;
         }
     }
