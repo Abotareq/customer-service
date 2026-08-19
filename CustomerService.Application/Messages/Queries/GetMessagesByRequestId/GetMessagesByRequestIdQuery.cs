@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomerService.Application.Message.Queries.GetMessagesByRequestId
+namespace CustomerService.Application.Messages.Queries.GetMessagesByRequestId
 {
     public sealed record GetMessagesByRequestIdQuery(
      Guid RequestId,

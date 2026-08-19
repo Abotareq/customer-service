@@ -1,5 +1,6 @@
 ﻿using CustomerService.Application.Common.Interfaces.Message;
 using CustomerService.Application.Common.Interfaces.Persistence;
+using CustomerService.Application.Messages.Commands.SendMessage;
 using CustomerService.Contracts.Messages;
 using CustomerService.Domain.DomainErrors;
 using CustomerService.Domain.Request.ValueObjects;
@@ -10,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomerService.Application.Message.Commands.SendMessage
+namespace CustomerService.Application.Messagses.Commands.SendMessage
 {
     public sealed class SendMessageCommandHandler
       : IRequestHandler<SendMessageCommand, ErrorOr<MessageResponse>>

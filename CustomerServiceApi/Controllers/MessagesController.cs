@@ -1,5 +1,5 @@
-﻿using CustomerService.Application.Message.Commands.SendMessage;
-using CustomerService.Application.Message.Queries.GetMessagesByRequestId;
+﻿using CustomerService.Application.Messages.Commands.SendMessage;
+using CustomerService.Application.Messages.Queries.GetMessagesByRequestId;
 using CustomerService.Contracts.Messages;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -37,5 +37,6 @@ namespace CustomerService.Api.Controllers
             var result = await _mediator.Send(query);
             return result.Match(response => Ok(response), Problem);
         }
+
     }
 }

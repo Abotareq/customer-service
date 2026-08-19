@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomerService.Application.Message.Commands.SendMessage
+namespace CustomerService.Application.Messages.Commands.SendMessage
 {
     public sealed class SendMessageCommandValidator : AbstractValidator<SendMessageCommand>
     {

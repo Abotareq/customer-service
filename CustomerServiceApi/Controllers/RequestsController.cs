@@ -1,4 +1,5 @@
-﻿using CustomerService.Application.Requests.Commands.AssignRequest;
+﻿using CustomerService.Application.Messages.Commands.RequestAdditionalInfo;
+using CustomerService.Application.Requests.Commands.AssignRequest;
 using CustomerService.Application.Requests.Commands.ChangeRequestCategory;
 using CustomerService.Application.Requests.Commands.ChangeRequestStatus;
 using CustomerService.Application.Requests.Commands.ChangeRequestUrgency;
@@ -118,6 +119,14 @@ namespace CustomerService.Api.Controllers
         public async Task<IActionResult> ChangeCategory(Guid id, [FromBody] string newCategory)
         {
             var command = new ChangeRequestCategoryCommand(id, newCategory, CurrentUserId);
+            var result = await _mediator.Send(command);
+            return result.Match(response => Ok(response), Problem);
+        }
+        [HttpPost("{requestId:guid}/request-additional-info")]
+        [Authorize(Roles = "Agent,Manager")]
+        public async Task<IActionResult> RequestAdditionalInfo(Guid requestId, [FromBody] string content)
+        {
+            var command = new RequestAdditionalInfoCommand(requestId, CurrentUserId, content);
             var result = await _mediator.Send(command);
             return result.Match(response => Ok(response), Problem);
         }
