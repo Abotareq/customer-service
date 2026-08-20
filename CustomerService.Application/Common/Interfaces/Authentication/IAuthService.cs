@@ -14,5 +14,7 @@ namespace CustomerService.Application.Common.Interfaces.Authentication
         Task<ErrorOr<string>> ValidateStoredRefreshTokenAsync(Guid userId, string refreshToken);
         Task<ErrorOr<string>> GenerateEmailConfirmationTokenAsync(Guid userId);
         Task<ErrorOr<Success>> ConfirmEmailAsync(Guid userId, string token);
+        Task<ErrorOr<Success>> SendPasswordResetTokenAsync(string email, string apiBaseUrl);
+        Task<ErrorOr<Success>> ResetPasswordAsync(Guid userId, string token, string newPassword);
     }
 }

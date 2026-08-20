@@ -1,4 +1,5 @@
-﻿using CustomerService.Application.Common.Interfaces.Authentication;
+﻿using CustomerService.Application.Common.Interfaces;
+using CustomerService.Application.Common.Interfaces.Authentication;
 using CustomerService.Application.Common.Interfaces.Message;
 using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Infrastructure.Authintication;
@@ -15,8 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Identity.Core;
 using System;
 using System.Collections.Generic;
-using IEmailSender = CustomerService.Application.Common.Interfaces.IEmailSender;
 using System.Text;
+using IEmailSender = CustomerService.Application.Common.Interfaces.IEmailSender;
 namespace CustomerService.Infrastructure
 {
     public static class DependencyInjection
@@ -63,6 +64,8 @@ namespace CustomerService.Infrastructure
             //email
             services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
             services.AddScoped<IEmailSender, SmtpEmailSender>();
+            //
+            services.AddSingleton<IApiUrlProvider, ApiUrlProvider>();
             //messeges
             services.AddSignalR();
             services.AddScoped<IMessageNotifier, MessageNotifier>();

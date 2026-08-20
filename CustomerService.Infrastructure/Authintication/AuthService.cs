@@ -1,4 +1,5 @@
-﻿using CustomerService.Application.Common.Interfaces.Authentication;
+﻿using CustomerService.Application.Common.Interfaces;
+using CustomerService.Application.Common.Interfaces.Authentication;
 using CustomerService.Infrastructure.Identity;
 using ErrorOr;
 using Microsoft.AspNetCore.Identity;
@@ -12,10 +13,11 @@ namespace CustomerService.Infrastructure.Authintication
     public sealed class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public AuthService(UserManager<ApplicationUser> userManager)
+        private readonly IEmailSender _emailSender;
+        public AuthService(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
         {
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         public async Task<ErrorOr<string>> RegisterIdentityUserAsync(
@@ -107,6 +109,40 @@ namespace CustomerService.Infrastructure.Authintication
                 return Error.NotFound("Auth.UserNotFound", "User not found.");
 
             var result = await _userManager.ConfirmEmailAsync(identityUser, token);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
+                return errors;
+            }
+
+            return Result.Success;
+        }
+        public async Task<ErrorOr<Success>> SendPasswordResetTokenAsync(string email, string apiBaseUrl)
+        {
+            var identityUser = await _userManager.FindByEmailAsync(email);
+            if (identityUser is null)
+                return Result.Success; // don't reveal whether the email exists
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(identityUser);
+
+            var resetLink =
+                $"{apiBaseUrl}/api/auth/reset-password?userId={identityUser.Id}&token={Uri.EscapeDataString(token)}";
+
+            await _emailSender.SendEmailAsync(
+                email,
+                "Reset your password",
+                $"<p>Click <a href=\"{resetLink}\">here</a> to reset your password. If you didn't request this, ignore this email.</p>");
+
+            return Result.Success;
+        }
+
+        public async Task<ErrorOr<Success>> ResetPasswordAsync(Guid userId, string token, string newPassword)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (identityUser is null)
+                return Error.NotFound("Auth.UserNotFound", "User not found.");
+
+            var result = await _userManager.ResetPasswordAsync(identityUser, token, newPassword);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
