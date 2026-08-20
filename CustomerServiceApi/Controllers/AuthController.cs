@@ -1,4 +1,5 @@
-﻿using CustomerService.Application.Authentication.Commands.Login;
+﻿using CustomerService.Application.Authentication.Commands.ConfirmEmail;
+using CustomerService.Application.Authentication.Commands.Login;
 using CustomerService.Application.Authentication.Commands.RefreshToken;
 using CustomerService.Application.Authentication.Commands.Register;
 using CustomerService.Contracts.Authentication;
@@ -44,6 +45,16 @@ namespace CustomerService.Api.Controllers
             var result = await _mediator.Send(command);
 
             return result.Match(authResponse => Ok(authResponse), Problem);
+        }
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] Guid userId, [FromQuery] string token)
+        {
+            var command = new ConfirmEmailCommand(userId, token);
+            var result = await _mediator.Send(command);
+
+            return result.Match(
+                _ => Content("<h2>Email confirmed successfully. You may now log in.</h2>", "text/html"),
+                Problem);
         }
     }
 }

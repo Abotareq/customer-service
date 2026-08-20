@@ -2,6 +2,7 @@
 using CustomerService.Application.Common.Interfaces.Message;
 using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Infrastructure.Authintication;
+using CustomerService.Infrastructure.Email;
 using CustomerService.Infrastructure.Identity;
 using CustomerService.Infrastructure.Notifications;
 using CustomerService.Infrastructure.Persistence;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Identity.Core;
 using System;
 using System.Collections.Generic;
+using IEmailSender = CustomerService.Application.Common.Interfaces.IEmailSender;
 using System.Text;
 namespace CustomerService.Infrastructure
 {
@@ -39,9 +41,12 @@ namespace CustomerService.Infrastructure
             {
                 options.Password.RequiredLength = 8;
                 options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
+
             })
                 .AddRoles<IdentityRole<Guid>>()
-                .AddEntityFrameworkStores<CustomerSupportDbContext>();
+                .AddEntityFrameworkStores<CustomerSupportDbContext>()
+                 .AddDefaultTokenProviders();
 
             // JWT settings binding
             services.Configure<JwtSettings>(
@@ -55,7 +60,9 @@ namespace CustomerService.Infrastructure
             // Authentication services
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-
+            //email
+            services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
             //messeges
             services.AddSignalR();
             services.AddScoped<IMessageNotifier, MessageNotifier>();

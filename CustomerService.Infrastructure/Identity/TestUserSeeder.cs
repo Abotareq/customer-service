@@ -52,8 +52,10 @@ namespace CustomerService.Infrastructure.Identity
             var createResult = await userManager.CreateAsync(identityUser, password);
             if (!createResult.Succeeded) return;
 
-            await userManager.AddToRoleAsync(identityUser, role);
+            identityUser.EmailConfirmed = true;   // <-- add this line
+            await userManager.UpdateAsync(identityUser);
 
+            await userManager.AddToRoleAsync(identityUser, role);
             dbContext.Users.Add(domainUserResult.Value);
             await dbContext.SaveChangesAsync();
         }

@@ -48,7 +48,7 @@ namespace CustomerService.Infrastructure.Authintication
         }
 
         public async Task<ErrorOr<(Guid UserId, string Role)>> ValidateCredentialsAsync(
-            string email, string password)
+      string email, string password)
         {
             var identityUser = await _userManager.FindByEmailAsync(email);
             if (identityUser is null)
@@ -57,6 +57,9 @@ namespace CustomerService.Infrastructure.Authintication
             var passwordValid = await _userManager.CheckPasswordAsync(identityUser, password);
             if (!passwordValid)
                 return Error.Unauthorized("Auth.InvalidCredentials", "Invalid email or password.");
+
+            if (!identityUser.EmailConfirmed)
+                return Error.Unauthorized("Auth.EmailNotConfirmed", "Please confirm your email before logging in.");
 
             var roles = await _userManager.GetRolesAsync(identityUser);
             var role = roles.FirstOrDefault() ?? "Customer";
@@ -86,6 +89,31 @@ namespace CustomerService.Infrastructure.Authintication
 
             var roles = await _userManager.GetRolesAsync(identityUser);
             return roles.FirstOrDefault() ?? "Customer";
+        }
+        public async Task<ErrorOr<string>> GenerateEmailConfirmationTokenAsync(Guid userId)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (identityUser is null)
+                return Error.NotFound("Auth.UserNotFound", "User not found.");
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+            return token;
+        }
+
+        public async Task<ErrorOr<Success>> ConfirmEmailAsync(Guid userId, string token)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (identityUser is null)
+                return Error.NotFound("Auth.UserNotFound", "User not found.");
+
+            var result = await _userManager.ConfirmEmailAsync(identityUser, token);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
+                return errors;
+            }
+
+            return Result.Success;
         }
     }
 }

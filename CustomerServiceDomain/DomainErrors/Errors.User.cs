@@ -17,5 +17,8 @@ public static partial class Errors
 		public static Error InvalidEmailFormat => Error.Validation(
 			code: "User.InvalidEmailFormat",
 			description: "Email format is invalid.");
-	}
+        public static Error EmailNotConfirmed => Error.Unauthorized(
+            code: "Auth.EmailNotConfirmed",
+            description: "Please confirm your email before logging in.");
+    }
 }

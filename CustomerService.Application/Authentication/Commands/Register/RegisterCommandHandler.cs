@@ -1,4 +1,5 @@
-﻿using CustomerService.Application.Common.Interfaces.Authentication;
+﻿using CustomerService.Application.Common.Interfaces;
+using CustomerService.Application.Common.Interfaces.Authentication;
 using CustomerService.Application.Common.Interfaces.Persistence;
 using CustomerService.Contracts.Authentication;
 using CustomerService.Domain.Users.Entites;
@@ -18,17 +19,20 @@ namespace CustomerService.Application.Authentication.Commands.Register
         private readonly IUserRepository _userRepository;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailSender _emailSender;
 
         public RegisterCommandHandler(
             IAuthService authService,
             IUserRepository userRepository,
             IJwtTokenGenerator jwtTokenGenerator,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IEmailSender emailSender)
         {
             _authService = authService;
             _userRepository = userRepository;
             _jwtTokenGenerator = jwtTokenGenerator;
             _unitOfWork = unitOfWork;
+            _emailSender = emailSender;
         }
 
         public async Task<ErrorOr<AuthResponse>> Handle(
@@ -56,7 +60,20 @@ namespace CustomerService.Application.Authentication.Commands.Register
             // 4. Persist the domain aggregate
             await _userRepository.AddAsync(customer);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // after: await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(userId.Value);
+            if (!tokenResult.IsError)
+            {
+                var confirmationLink =
+                    $"https://localhost:7018/api/auth/confirm-email?userId={userId.Value}&token={Uri.EscapeDataString(tokenResult.Value)}";
+
+                await _emailSender.SendEmailAsync(
+                    request.Email,
+                    "Confirm your email",
+                    $"<p>Welcome! Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>.</p>",
+                    cancellationToken);
+            }
             // 5. Issue tokens
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(customer, role);
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
